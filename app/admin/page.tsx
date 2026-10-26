@@ -257,7 +257,8 @@ export default function AdminDashboard() {
     }
     return <span className="text-xs font-semibold bg-slate-200 text-slate-700 px-2.5 py-1 rounded-full">Mixed</span>;
   }
-// Safe client-side date tracking for filters
+
+  // Safe client-side date tracking for filters
   const [currentDate, setCurrentDate] = useState<Date | null>(null);
 
   useEffect(() => {
@@ -282,12 +283,6 @@ export default function AdminDashboard() {
       if (timeFilter === "past" && slotStart >= now) return false;
     }
 
-    if (genderFilter !== "all" && slot.gender_restriction !== genderFilter) {
-      return false;
-    }
-
-    return true;
-  });
     if (genderFilter !== "all" && slot.gender_restriction !== genderFilter) {
       return false;
     }
