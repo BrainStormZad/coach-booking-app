@@ -2,7 +2,20 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import { Trash2, Users, PlusCircle, Calendar, Repeat, Lock, LogOut } from "lucide-react";
+import {
+  Trash2,
+  Users,
+  PlusCircle,
+  Calendar,
+  Repeat,
+  Lock,
+  LogOut,
+  Pencil,
+  UserPlus,
+  X,
+  Check,
+  Filter,
+} from "lucide-react";
 
 const ADMIN_PASSWORD = process.env.NEXT_PUBLIC_ADMIN_PASSWORD || "admin123";
 
@@ -13,7 +26,7 @@ export default function AdminDashboard() {
   const [passwordInput, setPasswordInput] = useState("");
   const [authError, setAuthError] = useState("");
 
-  // Dashboard State
+  // Create Slot State
   const [slots, setSlots] = useState<any[]>([]);
   const [title, setTitle] = useState("Small Group Training");
   const [date, setDate] = useState("");
@@ -23,6 +36,31 @@ export default function AdminDashboard() {
   const [genderRestriction, setGenderRestriction] = useState("mixed");
   const [repeatWeeks, setRepeatWeeks] = useState(1);
   const [loading, setLoading] = useState(false);
+
+  // Admin Filter State
+  const [timeFilter, setTimeFilter] = useState<"upcoming" | "today" | "week" | "past" | "all">("upcoming");
+  const [specificDateFilter, setSpecificDateFilter] = useState<string>("");
+  const [genderFilter, setGenderFilter] = useState<string>("all");
+
+  // Edit Existing Slot State
+  const [editingSlotId, setEditingSlotId] = useState<string | null>(null);
+  const [editSlotTitle, setEditSlotTitle] = useState("");
+  const [editSlotDate, setEditSlotDate] = useState("");
+  const [editSlotStartTime, setEditSlotStartTime] = useState("");
+  const [editSlotEndTime, setEditSlotEndTime] = useState("");
+  const [editSlotCapacity, setEditSlotCapacity] = useState(1);
+  const [editSlotGender, setEditSlotGender] = useState("mixed");
+
+  // Manage Client Bookings State (Add / Edit)
+  const [addingToSlotId, setAddingToSlotId] = useState<string | null>(null);
+  const [newClientName, setNewClientName] = useState("");
+  const [newClientEmail, setNewClientEmail] = useState("");
+  const [newClientPhone, setNewClientPhone] = useState("");
+
+  const [editingBookingId, setEditingBookingId] = useState<string | null>(null);
+  const [editClientName, setEditClientName] = useState("");
+  const [editClientEmail, setEditClientEmail] = useState("");
+  const [editClientPhone, setEditClientPhone] = useState("");
 
   useEffect(() => {
     const savedAuth = localStorage.getItem("trainer_admin_unlocked");
@@ -59,6 +97,14 @@ export default function AdminDashboard() {
     if (data) setSlots(data);
   }
 
+  function toLocalDateKey(isoString: string) {
+    const d = new Date(isoString);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
   async function handleCreateSlot(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
@@ -93,9 +139,117 @@ export default function AdminDashboard() {
     }
   }
 
+  // --- Edit & Delete Time Slot Functions ---
+
+  function startEditingSlot(slot: any) {
+    const startObj = new Date(slot.start_time);
+    const endObj = new Date(slot.end_time);
+
+    const formattedDate = toLocalDateKey(slot.start_time);
+    const formattedStart = `${String(startObj.getHours()).padStart(2, "0")}:${String(
+      startObj.getMinutes()
+    ).padStart(2, "0")}`;
+    const formattedEnd = `${String(endObj.getHours()).padStart(2, "0")}:${String(
+      endObj.getMinutes()
+    ).padStart(2, "0")}`;
+
+    setEditingSlotId(slot.id);
+    setEditSlotTitle(slot.title);
+    setEditSlotDate(formattedDate);
+    setEditSlotStartTime(formattedStart);
+    setEditSlotEndTime(formattedEnd);
+    setEditSlotCapacity(slot.max_capacity);
+    setEditSlotGender(slot.gender_restriction || "mixed");
+  }
+
+  async function handleUpdateSlot(e: React.FormEvent, slotId: string) {
+    e.preventDefault();
+    const updatedStart = new Date(`${editSlotDate}T${editSlotStartTime}`).toISOString();
+    const updatedEnd = new Date(`${editSlotDate}T${editSlotEndTime}`).toISOString();
+
+    const { error } = await supabase
+      .from("time_slots")
+      .update({
+        title: editSlotTitle,
+        start_time: updatedStart,
+        end_time: updatedEnd,
+        max_capacity: Number(editSlotCapacity),
+        gender_restriction: editSlotGender,
+      })
+      .eq("id", slotId);
+
+    if (error) {
+      alert("Error updating slot: " + error.message);
+    } else {
+      setEditingSlotId(null);
+      fetchSlots();
+    }
+  }
+
   async function handleDeleteSlot(id: string) {
+    if (!confirm("Delete this entire time slot and all its bookings?")) return;
     await supabase.from("time_slots").delete().eq("id", id);
     fetchSlots();
+  }
+
+  // --- Booking Management Functions (Add, Edit, Remove Client) ---
+
+  async function handleAddClientToSlot(e: React.FormEvent, slotId: string) {
+    e.preventDefault();
+    const { error } = await supabase.from("bookings").insert([
+      {
+        slot_id: slotId,
+        client_name: newClientName,
+        client_email: newClientEmail,
+        client_phone: newClientPhone,
+      },
+    ]);
+
+    if (error) {
+      alert("Error adding client: " + error.message);
+    } else {
+      setAddingToSlotId(null);
+      setNewClientName("");
+      setNewClientEmail("");
+      setNewClientPhone("");
+      fetchSlots();
+    }
+  }
+
+  function startEditingBooking(booking: any) {
+    setEditingBookingId(booking.id);
+    setEditClientName(booking.client_name);
+    setEditClientEmail(booking.client_email);
+    setEditClientPhone(booking.client_phone);
+  }
+
+  async function handleUpdateBooking(e: React.FormEvent, bookingId: string) {
+    e.preventDefault();
+    const { error } = await supabase
+      .from("bookings")
+      .update({
+        client_name: editClientName,
+        client_email: editClientEmail,
+        client_phone: editClientPhone,
+      })
+      .eq("id", bookingId);
+
+    if (error) {
+      alert("Error updating booking: " + error.message);
+    } else {
+      setEditingBookingId(null);
+      fetchSlots();
+    }
+  }
+
+  async function handleDeleteBooking(bookingId: string, clientName: string) {
+    if (!confirm(`Remove ${clientName} from this session?`)) return;
+    const { error } = await supabase.from("bookings").delete().eq("id", bookingId);
+    if (error) {
+      alert("Error removing client: " + error.message);
+    } else {
+      fetchSlots();
+    }
   }
 
   function getGenderBadge(gender: string) {
@@ -107,6 +261,34 @@ export default function AdminDashboard() {
     }
     return <span className="text-xs font-semibold bg-slate-200 text-slate-700 px-2.5 py-1 rounded-full">Mixed</span>;
   }
+
+  // Filter logic for the Admin Slot List
+  const now = new Date();
+  const todayKey = toLocalDateKey(now.toISOString());
+  const nextWeekDate = new Date(now);
+  nextWeekDate.setDate(now.getDate() + 7);
+
+  const filteredSlots = slots.filter((slot) => {
+    const slotStart = new Date(slot.start_time);
+    const slotDateKey = toLocalDateKey(slot.start_time);
+
+    // 1. Specific Date Filter overrides time tabs if set
+    if (specificDateFilter) {
+      if (slotDateKey !== specificDateFilter) return false;
+    } else {
+      if (timeFilter === "upcoming" && slotStart < now) return false;
+      if (timeFilter === "today" && slotDateKey !== todayKey) return false;
+      if (timeFilter === "week" && (slotStart < now || slotStart > nextWeekDate)) return false;
+      if (timeFilter === "past" && slotStart >= now) return false;
+    }
+
+    // 2. Gender Filter
+    if (genderFilter !== "all" && slot.gender_restriction !== genderFilter) {
+      return false;
+    }
+
+    return true;
+  });
 
   if (checkingAuth) {
     return <div className="min-h-screen flex items-center justify-center text-slate-500">Loading...</div>;
@@ -284,65 +466,403 @@ export default function AdminDashboard() {
           </button>
         </form>
 
-        {/* List of Created Slots & Bookings */}
+        {/* List of Created Slots & Filter Bar */}
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold flex items-center gap-2">
-            <Calendar className="w-5 h-5" />
-            Upcoming Time Slots & Client Bookings
-          </h2>
+          <div className="flex flex-wrap justify-between items-center gap-4">
+            <h2 className="text-xl font-semibold flex items-center gap-2">
+              <Calendar className="w-5 h-5" />
+              Time Slots & Client Bookings ({filteredSlots.length})
+            </h2>
+          </div>
 
-          {slots.length === 0 && (
-            <p className="text-slate-500 bg-white p-6 rounded-xl border">
-              No custom slots created yet. Use the form above to add your first session!
+          {/* Filter Toolbar */}
+          <div className="bg-white p-4 rounded-xl border shadow-sm flex flex-wrap items-center justify-between gap-3">
+            {/* Time Range Pills */}
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                { id: "upcoming", label: "Upcoming" },
+                { id: "today", label: "Today" },
+                { id: "week", label: "Next 7 Days" },
+                { id: "past", label: "Past" },
+                { id: "all", label: "All" },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => {
+                    setTimeFilter(tab.id as any);
+                    setSpecificDateFilter("");
+                  }}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
+                    !specificDateFilter && timeFilter === tab.id
+                      ? "bg-blue-600 text-white"
+                      : "bg-slate-100 text-slate-700 hover:bg-slate-200"
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Specific Date & Gender Filters */}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-1">
+                <input
+                  type="date"
+                  value={specificDateFilter}
+                  onChange={(e) => setSpecificDateFilter(e.target.value)}
+                  className="border rounded-lg px-2.5 py-1 text-xs bg-white"
+                />
+                {specificDateFilter && (
+                  <button
+                    type="button"
+                    onClick={() => setSpecificDateFilter("")}
+                    title="Clear date filter"
+                    className="text-xs text-red-600 hover:underline px-1"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
+
+              <select
+                value={genderFilter}
+                onChange={(e) => setGenderFilter(e.target.value)}
+                className="border rounded-lg px-2.5 py-1 text-xs bg-white"
+              >
+                <option value="all">All Genders</option>
+                <option value="mixed">Mixed Only</option>
+                <option value="female">Women Only</option>
+                <option value="male">Men Only</option>
+              </select>
+            </div>
+          </div>
+
+          {filteredSlots.length === 0 && (
+            <p className="text-slate-500 bg-white p-6 rounded-xl border text-center">
+              No time slots match your current filter.
             </p>
           )}
 
-          {slots.map((slot) => {
+          {filteredSlots.map((slot) => {
             const bookedCount = slot.bookings?.length || 0;
-            return (
-              <div key={slot.id} className="bg-white p-5 rounded-xl shadow-sm border space-y-3">
-                <div className="flex justify-between items-start">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-bold text-lg">{slot.title}</h3>
-                      {getGenderBadge(slot.gender_restriction)}
-                    </div>
-                    <p className="text-sm text-slate-600">
-                      {new Date(slot.start_time).toLocaleDateString(undefined, {
-                        weekday: "short",
-                        month: "short",
-                        day: "numeric",
-                        year: "numeric",
-                      })}{" "}
-                      •{" "}
-                      {new Date(slot.start_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} -{" "}
-                      {new Date(slot.end_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-4">
-                    <span className="flex items-center gap-1 text-sm font-medium bg-slate-100 px-3 py-1 rounded-full">
-                      <Users className="w-4 h-4" />
-                      {bookedCount} / {slot.max_capacity} booked
-                    </span>
-                    <button
-                      onClick={() => handleDeleteSlot(slot.id)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      <Trash2 className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
+            const isFull = bookedCount >= slot.max_capacity;
+            const isEditingThisSlot = editingSlotId === slot.id;
 
+            return (
+              <div key={slot.id} className="bg-white p-5 rounded-xl shadow-sm border space-y-4">
+                {isEditingThisSlot ? (
+                  /* Inline Edit Form for Time Slot Details */
+                  <form
+                    onSubmit={(e) => handleUpdateSlot(e, slot.id)}
+                    className="bg-amber-50/70 border border-amber-200 p-4 rounded-xl space-y-3"
+                  >
+                    <div className="flex justify-between items-center">
+                      <span className="text-xs font-bold uppercase text-amber-800">
+                        Editing Time Slot Details
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setEditingSlotId(null)}
+                        className="text-slate-400 hover:text-slate-600"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-xs font-medium mb-1">Title</label>
+                        <input
+                          type="text"
+                          required
+                          value={editSlotTitle}
+                          onChange={(e) => setEditSlotTitle(e.target.value)}
+                          className="w-full border rounded p-2 text-sm bg-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium mb-1">Max Capacity</label>
+                        <input
+                          type="number"
+                          min={1}
+                          required
+                          value={editSlotCapacity}
+                          onChange={(e) => setEditSlotCapacity(Number(e.target.value))}
+                          className="w-full border rounded p-2 text-sm bg-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium mb-1">Gender Access</label>
+                        <select
+                          value={editSlotGender}
+                          onChange={(e) => setEditSlotGender(e.target.value)}
+                          className="w-full border rounded p-2 text-sm bg-white"
+                        >
+                          <option value="mixed">Mixed (Everyone)</option>
+                          <option value="female">Women Only</option>
+                          <option value="male">Men Only</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium mb-1">Date</label>
+                        <input
+                          type="date"
+                          required
+                          value={editSlotDate}
+                          onChange={(e) => setEditSlotDate(e.target.value)}
+                          className="w-full border rounded p-2 text-sm bg-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium mb-1">Start Time</label>
+                        <input
+                          type="time"
+                          required
+                          value={editSlotStartTime}
+                          onChange={(e) => setEditSlotStartTime(e.target.value)}
+                          className="w-full border rounded p-2 text-sm bg-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium mb-1">End Time</label>
+                        <input
+                          type="time"
+                          required
+                          value={editSlotEndTime}
+                          onChange={(e) => setEditSlotEndTime(e.target.value)}
+                          className="w-full border rounded p-2 text-sm bg-white"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 pt-1">
+                      <button
+                        type="submit"
+                        className="bg-emerald-600 text-white text-xs font-semibold px-4 py-2 rounded-lg hover:bg-emerald-700 flex items-center gap-1"
+                      >
+                        <Check className="w-3.5 h-3.5" />
+                        Save Slot Changes
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditingSlotId(null)}
+                        className="text-xs text-slate-600 px-3 py-2 hover:underline"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  /* Normal Slot Header */
+                  <div className="flex flex-wrap justify-between items-start gap-2">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-bold text-lg">{slot.title}</h3>
+                        {getGenderBadge(slot.gender_restriction)}
+                      </div>
+                      <p className="text-sm text-slate-600">
+                        {new Date(slot.start_time).toLocaleDateString(undefined, {
+                          weekday: "short",
+                          month: "short",
+                          day: "numeric",
+                          year: "numeric",
+                        })}{" "}
+                        •{" "}
+                        {new Date(slot.start_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} -{" "}
+                        {new Date(slot.end_time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <span className="flex items-center gap-1 text-sm font-medium bg-slate-100 px-3 py-1 rounded-full">
+                        <Users className="w-4 h-4" />
+                        {bookedCount} / {slot.max_capacity} booked
+                      </span>
+
+                      {!isFull && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAddingToSlotId(addingToSlotId === slot.id ? null : slot.id);
+                            setNewClientName("");
+                            setNewClientEmail("");
+                            setNewClientPhone("");
+                          }}
+                          className="flex items-center gap-1 text-xs font-semibold bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition"
+                        >
+                          <UserPlus className="w-3.5 h-3.5" />
+                          Add Client
+                        </button>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => startEditingSlot(slot)}
+                        title="Edit time slot details"
+                        className="text-slate-400 hover:text-blue-600 transition p-1"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteSlot(slot.id)}
+                        title="Delete entire time slot"
+                        className="text-slate-400 hover:text-red-600 transition p-1"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Inline Form to Manually Add a Client to This Slot */}
+                {addingToSlotId === slot.id && (
+                  <form
+                    onSubmit={(e) => handleAddClientToSlot(e, slot.id)}
+                    className="bg-blue-50/60 border border-blue-200 p-3.5 rounded-lg space-y-3"
+                  >
+                    <p className="text-xs font-semibold text-blue-800 uppercase">
+                      Manually Add Client to This Session:
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                      <input
+                        type="text"
+                        required
+                        placeholder="Client Name"
+                        value={newClientName}
+                        onChange={(e) => setNewClientName(e.target.value)}
+                        className="border rounded p-2 text-sm bg-white"
+                      />
+                      <input
+                        type="email"
+                        required
+                        placeholder="Email Address"
+                        value={newClientEmail}
+                        onChange={(e) => setNewClientEmail(e.target.value)}
+                        className="border rounded p-2 text-sm bg-white"
+                      />
+                      <input
+                        type="tel"
+                        required
+                        placeholder="Phone Number"
+                        value={newClientPhone}
+                        onChange={(e) => setNewClientPhone(e.target.value)}
+                        className="border rounded p-2 text-sm bg-white"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        type="submit"
+                        className="bg-blue-600 text-white text-xs font-semibold px-4 py-2 rounded hover:bg-blue-700"
+                      >
+                        Save Client
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setAddingToSlotId(null)}
+                        className="text-xs text-slate-600 px-3 py-2 hover:underline"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                )}
+
+                {/* Registered Clients List (With Edit & Remove Controls) */}
                 {bookedCount > 0 && (
                   <div className="border-t pt-3">
                     <p className="text-xs font-semibold uppercase text-slate-400 mb-2">Registered Clients:</p>
-                    <ul className="space-y-1 text-sm">
-                      {slot.bookings.map((b: any) => (
-                        <li key={b.id} className="flex justify-between bg-slate-50 p-2 rounded">
-                          <span className="font-medium">{b.client_name}</span>
-                          <span className="text-slate-600">{b.client_phone} • {b.client_email}</span>
-                        </li>
-                      ))}
+                    <ul className="space-y-2 text-sm">
+                      {slot.bookings.map((b: any) => {
+                        const isEditing = editingBookingId === b.id;
+
+                        if (isEditing) {
+                          return (
+                            <li key={b.id} className="bg-amber-50 border border-amber-200 p-2.5 rounded-lg">
+                              <form
+                                onSubmit={(e) => handleUpdateBooking(e, b.id)}
+                                className="flex flex-col md:flex-row gap-2 items-center"
+                              >
+                                <input
+                                  type="text"
+                                  required
+                                  value={editClientName}
+                                  onChange={(e) => setEditClientName(e.target.value)}
+                                  className="border rounded p-1.5 text-sm bg-white w-full"
+                                  placeholder="Name"
+                                />
+                                <input
+                                  type="tel"
+                                  required
+                                  value={editClientPhone}
+                                  onChange={(e) => setEditClientPhone(e.target.value)}
+                                  className="border rounded p-1.5 text-sm bg-white w-full"
+                                  placeholder="Phone"
+                                />
+                                <input
+                                  type="email"
+                                  required
+                                  value={editClientEmail}
+                                  onChange={(e) => setEditClientEmail(e.target.value)}
+                                  className="border rounded p-1.5 text-sm bg-white w-full"
+                                  placeholder="Email"
+                                />
+                                <div className="flex gap-1 shrink-0">
+                                  <button
+                                    type="submit"
+                                    title="Save changes"
+                                    className="bg-emerald-600 text-white p-1.5 rounded hover:bg-emerald-700"
+                                  >
+                                    <Check className="w-4 h-4" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => setEditingBookingId(null)}
+                                    title="Cancel"
+                                    className="bg-slate-200 text-slate-700 p-1.5 rounded hover:bg-slate-300"
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              </form>
+                            </li>
+                          );
+                        }
+
+                        return (
+                          <li
+                            key={b.id}
+                            className="flex flex-wrap justify-between items-center gap-2 bg-slate-50 px-3 py-2 rounded-lg"
+                          >
+                            <div>
+                              <span className="font-medium text-slate-900">{b.client_name}</span>
+                              <span className="text-slate-500 ml-3 text-xs md:text-sm">
+                                {b.client_phone} • {b.client_email}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => startEditingBooking(b)}
+                                title="Edit client info"
+                                className="text-slate-500 hover:text-blue-600 p-1 transition"
+                              >
+                                <Pencil className="w-4 h-4" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteBooking(b.id, b.client_name)}
+                                title="Remove client from slot"
+                                className="text-slate-500 hover:text-red-600 p-1 transition"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </li>
+                        );
+                      })}
                     </ul>
                   </div>
                 )}
