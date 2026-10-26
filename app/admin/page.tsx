@@ -139,8 +139,6 @@ export default function AdminDashboard() {
     }
   }
 
-  // --- Edit & Delete Time Slot Functions ---
-
   function startEditingSlot(slot: any) {
     const startObj = new Date(slot.start_time);
     const endObj = new Date(slot.end_time);
@@ -191,8 +189,6 @@ export default function AdminDashboard() {
     await supabase.from("time_slots").delete().eq("id", id);
     fetchSlots();
   }
-
-  // --- Booking Management Functions (Add, Edit, Remove Client) ---
 
   async function handleAddClientToSlot(e: React.FormEvent, slotId: string) {
     e.preventDefault();
@@ -262,7 +258,7 @@ export default function AdminDashboard() {
     return <span className="text-xs font-semibold bg-slate-200 text-slate-700 px-2.5 py-1 rounded-full">Mixed</span>;
   }
 
-  // Filter logic for the Admin Slot List
+  // Safe filter logic using client-side execution
   const now = new Date();
   const todayKey = toLocalDateKey(now.toISOString());
   const nextWeekDate = new Date(now);
@@ -272,7 +268,6 @@ export default function AdminDashboard() {
     const slotStart = new Date(slot.start_time);
     const slotDateKey = toLocalDateKey(slot.start_time);
 
-    // 1. Specific Date Filter overrides time tabs if set
     if (specificDateFilter) {
       if (slotDateKey !== specificDateFilter) return false;
     } else {
@@ -282,7 +277,6 @@ export default function AdminDashboard() {
       if (timeFilter === "past" && slotStart >= now) return false;
     }
 
-    // 2. Gender Filter
     if (genderFilter !== "all" && slot.gender_restriction !== genderFilter) {
       return false;
     }
@@ -294,7 +288,6 @@ export default function AdminDashboard() {
     return <div className="min-h-screen flex items-center justify-center text-slate-500">Loading...</div>;
   }
 
-  // Simple 1-Password Screen
   if (!isUnlocked) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-6 text-slate-900">
@@ -336,7 +329,6 @@ export default function AdminDashboard() {
     );
   }
 
-  // Unlocked Admin Dashboard
   return (
     <div className="min-h-screen bg-slate-50 p-6 md:p-12 text-slate-900">
       <div className="max-w-4xl mx-auto space-y-8">
@@ -356,7 +348,6 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* Create Custom Slot Form */}
         <form onSubmit={handleCreateSlot} className="bg-white p-6 rounded-xl shadow-sm border space-y-4">
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <PlusCircle className="w-5 h-5 text-blue-600" />
@@ -466,7 +457,6 @@ export default function AdminDashboard() {
           </button>
         </form>
 
-        {/* List of Created Slots & Filter Bar */}
         <div className="space-y-4">
           <div className="flex flex-wrap justify-between items-center gap-4">
             <h2 className="text-xl font-semibold flex items-center gap-2">
@@ -475,9 +465,7 @@ export default function AdminDashboard() {
             </h2>
           </div>
 
-          {/* Filter Toolbar */}
           <div className="bg-white p-4 rounded-xl border shadow-sm flex flex-wrap items-center justify-between gap-3">
-            {/* Time Range Pills */}
             <div className="flex flex-wrap gap-1.5">
               {[
                 { id: "upcoming", label: "Upcoming" },
@@ -504,7 +492,6 @@ export default function AdminDashboard() {
               ))}
             </div>
 
-            {/* Specific Date & Gender Filters */}
             <div className="flex flex-wrap items-center gap-2">
               <div className="flex items-center gap-1">
                 <input
@@ -552,7 +539,6 @@ export default function AdminDashboard() {
             return (
               <div key={slot.id} className="bg-white p-5 rounded-xl shadow-sm border space-y-4">
                 {isEditingThisSlot ? (
-                  /* Inline Edit Form for Time Slot Details */
                   <form
                     onSubmit={(e) => handleUpdateSlot(e, slot.id)}
                     className="bg-amber-50/70 border border-amber-200 p-4 rounded-xl space-y-3"
@@ -654,7 +640,6 @@ export default function AdminDashboard() {
                     </div>
                   </form>
                 ) : (
-                  /* Normal Slot Header */
                   <div className="flex flex-wrap justify-between items-start gap-2">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
@@ -717,7 +702,6 @@ export default function AdminDashboard() {
                   </div>
                 )}
 
-                {/* Inline Form to Manually Add a Client to This Slot */}
                 {addingToSlotId === slot.id && (
                   <form
                     onSubmit={(e) => handleAddClientToSlot(e, slot.id)}
@@ -770,7 +754,6 @@ export default function AdminDashboard() {
                   </form>
                 )}
 
-                {/* Registered Clients List (With Edit & Remove Controls) */}
                 {bookedCount > 0 && (
                   <div className="border-t pt-3">
                     <p className="text-xs font-semibold uppercase text-slate-400 mb-2">Registered Clients:</p>
