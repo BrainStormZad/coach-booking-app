@@ -259,18 +259,21 @@ export default function AdminDashboard() {
   }
 
   // Safe client-side date tracking for filters
-  const [currentDate, setCurrentDate] = useState<Date | null>(null);
+  const [now, setNow] = useState<Date | null>(null);
 
   useEffect(() => {
-    setCurrentDate(new Date());
+    setNow(new Date());
   }, []);
 
-  const now = currentDate || new Date();
-  const todayKey = toLocalDateKey(now.toISOString());
-  const nextWeekDate = new Date(now);
-  nextWeekDate.setDate(now.getDate() + 7);
+  // If still prerendering on the server, use a dummy date or skip filtering safely
+  const safeNow = now || new Date(0); 
+  const todayKey = now ? toLocalDateKey(now.toISOString()) : "";
+  const nextWeekDate = now ? new Date(now) : new Date(0);
+  if (now) nextWeekDate.setDate(now.getDate() + 7);
 
   const filteredSlots = slots.filter((slot) => {
+    if (!now) return true; // Show everything during initial server render
+
     const slotStart = new Date(slot.start_time);
     const slotDateKey = toLocalDateKey(slot.start_time);
 
