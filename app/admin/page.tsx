@@ -257,9 +257,14 @@ export default function AdminDashboard() {
     }
     return <span className="text-xs font-semibold bg-slate-200 text-slate-700 px-2.5 py-1 rounded-full">Mixed</span>;
   }
+// Safe client-side date tracking for filters
+  const [currentDate, setCurrentDate] = useState<Date | null>(null);
 
-  // Safe filter logic using client-side execution
-  const now = new Date();
+  useEffect(() => {
+    setCurrentDate(new Date());
+  }, []);
+
+  const now = currentDate || new Date();
   const todayKey = toLocalDateKey(now.toISOString());
   const nextWeekDate = new Date(now);
   nextWeekDate.setDate(now.getDate() + 7);
@@ -277,6 +282,12 @@ export default function AdminDashboard() {
       if (timeFilter === "past" && slotStart >= now) return false;
     }
 
+    if (genderFilter !== "all" && slot.gender_restriction !== genderFilter) {
+      return false;
+    }
+
+    return true;
+  });
     if (genderFilter !== "all" && slot.gender_restriction !== genderFilter) {
       return false;
     }
