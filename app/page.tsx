@@ -2,17 +2,27 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
-import { Calendar, Clock, Users, CheckCircle2, UserCheck } from "lucide-react";
+import { Calendar, Clock, Users, CheckCircle2, UserCheck, Filter } from "lucide-react";
 
 export default function ClientBookingPage() {
   const [clientGender, setClientGender] = useState<"female" | "male" | null>(null);
   const [slots, setSlots] = useState<any[]>([]);
+  const [selectedDate, setSelectedDate] = useState<string>("all"); // "all" or "YYYY-MM-DD"
   const [selectedSlot, setSelectedSlot] = useState<any | null>(null);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [bookedSuccess, setBookedSuccess] = useState(false);
+
+  // Helper to get local YYYY-MM-DD string from a timestamp
+  function toLocalDateKey(isoString: string) {
+    const d = new Date(isoString);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
 
   async function fetchSlots(gender: "female" | "male") {
     const { data } = await supabase
@@ -27,6 +37,7 @@ export default function ClientBookingPage() {
   useEffect(() => {
     if (clientGender) {
       setSelectedSlot(null);
+      setSelectedDate("all");
       fetchSlots(clientGender);
     }
   }, [clientGender]);
@@ -80,6 +91,17 @@ export default function ClientBookingPage() {
     return <span className="text-xs font-semibold bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full">Mixed Session</span>;
   }
 
+  // Extract unique available dates for the horizontal Day Picker
+  const availableDates = Array.from(
+    new Set(slots.map((s) => toLocalDateKey(s.start_time)))
+  );
+
+  // Filter slots by the selected day
+  const filteredSlots =
+    selectedDate === "all"
+      ? slots
+      : slots.filter((s) => toLocalDateKey(s.start_time) === selectedDate);
+
   return (
     <div className="min-h-screen bg-slate-50 p-6 md:p-12 text-slate-900">
       <div className="max-w-3xl mx-auto space-y-8">
@@ -130,18 +152,77 @@ export default function ClientBookingPage() {
           </div>
         )}
 
-        {/* Step 2: Show Filtered Slots & Inline Booking Form */}
+        {/* Step 2: Date Filter & Available Slots */}
         {clientGender && (
           <div className="space-y-4">
-            <h2 className="text-lg font-semibold">Step 2: Choose a Time Slot</h2>
+            <div className="flex flex-wrap justify-between items-center gap-2">
+              <h2 className="text-lg font-semibold">Step 2: Choose a Day & Time Slot</h2>
+              {selectedDate !== "all" && (
+                <button
+                  onClick={() => setSelectedDate("all")}
+                  className="text-xs font-medium text-blue-600 hover:underline"
+                >
+                  Show all dates ({slots.length})
+                </button>
+              )}
+            </div>
 
-            {slots.length === 0 ? (
+            {/* Horizontal Day Filter Strip */}
+            {availableDates.length > 0 && (
+              <div className="flex gap-2 overflow-x-auto pb-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedDate("all");
+                    setSelectedSlot(null);
+                  }}
+                  className={`px-4 py-2.5 rounded-xl border text-sm font-semibold shrink-0 transition ${
+                    selectedDate === "all"
+                      ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                      : "bg-white text-slate-700 hover:bg-slate-100"
+                  }`}
+                >
+                  All Dates ({slots.length})
+                </button>
+
+                {availableDates.map((dateStr) => {
+                  const [y, m, d] = dateStr.split("-").map(Number);
+                  const dateObj = new Date(y, m - 1, d);
+                  const isActive = selectedDate === dateStr;
+
+                  return (
+                    <button
+                      key={dateStr}
+                      type="button"
+                      onClick={() => {
+                        setSelectedDate(dateStr);
+                        setSelectedSlot(null);
+                      }}
+                      className={`px-4 py-2 rounded-xl border text-center shrink-0 transition ${
+                        isActive
+                          ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                          : "bg-white text-slate-700 hover:bg-slate-100"
+                      }`}
+                    >
+                      <div className="text-xs uppercase opacity-80 font-medium">
+                        {dateObj.toLocaleDateString(undefined, { weekday: "short" })}
+                      </div>
+                      <div className="text-sm font-bold">
+                        {dateObj.toLocaleDateString(undefined, { day: "numeric", month: "short" })}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {filteredSlots.length === 0 ? (
               <p className="text-slate-500 bg-white p-6 rounded-xl border text-center">
-                No upcoming sessions available for this category right now.
+                No upcoming sessions available for this selection.
               </p>
             ) : (
               <div className="grid gap-4">
-                {slots.map((slot) => {
+                {filteredSlots.map((slot) => {
                   const bookedCount = slot.bookings?.length || 0;
                   const spotsLeft = slot.max_capacity - bookedCount;
                   const isFull = spotsLeft <= 0;
