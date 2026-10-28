@@ -28,7 +28,7 @@ export default function AdminDashboard() {
 
   // Create Slot State
   const [slots, setSlots] = useState<any[]>([]);
-  const [title, setTitle] = useState("Small Group Training");
+  const [title, setTitle] = useState("Entraînement en petit groupe");
   const [date, setDate] = useState("");
   const [startTime, setStartTime] = useState("18:00");
   const [endTime, setEndTime] = useState("19:00");
@@ -79,7 +79,7 @@ export default function AdminDashboard() {
       setAuthError("");
       fetchSlots();
     } else {
-      setAuthError("Incorrect password. Please try again.");
+      setAuthError("Mot de passe incorrect. Veuillez réessayer.");
     }
   }
 
@@ -133,7 +133,7 @@ export default function AdminDashboard() {
 
     setLoading(false);
     if (error) {
-      alert("Error creating slot(s): " + error.message);
+      alert("Erreur lors de la création du ou des créneaux : " + error.message);
     } else {
       fetchSlots();
     }
@@ -177,7 +177,7 @@ export default function AdminDashboard() {
       .eq("id", slotId);
 
     if (error) {
-      alert("Error updating slot: " + error.message);
+      alert("Erreur lors de la mise à jour du créneau : " + error.message);
     } else {
       setEditingSlotId(null);
       fetchSlots();
@@ -185,7 +185,7 @@ export default function AdminDashboard() {
   }
 
   async function handleDeleteSlot(id: string) {
-    if (!confirm("Delete this entire time slot and all its bookings?")) return;
+    if (!confirm("Voulez-vous vraiment supprimer tout ce créneau horaire ainsi que toutes ses réservations ?")) return;
     await supabase.from("time_slots").delete().eq("id", id);
     fetchSlots();
   }
@@ -202,7 +202,7 @@ export default function AdminDashboard() {
     ]);
 
     if (error) {
-      alert("Error adding client: " + error.message);
+      alert("Erreur lors de l'ajout du client : " + error.message);
     } else {
       setAddingToSlotId(null);
       setNewClientName("");
@@ -231,7 +231,7 @@ export default function AdminDashboard() {
       .eq("id", bookingId);
 
     if (error) {
-      alert("Error updating booking: " + error.message);
+      alert("Erreur lors de la mise à jour de la réservation : " + error.message);
     } else {
       setEditingBookingId(null);
       fetchSlots();
@@ -239,10 +239,10 @@ export default function AdminDashboard() {
   }
 
   async function handleDeleteBooking(bookingId: string, clientName: string) {
-    if (!confirm(`Remove ${clientName} from this session?`)) return;
+    if (!confirm(`Retirer ${clientName} de cette session ?`)) return;
     const { error } = await supabase.from("bookings").delete().eq("id", bookingId);
     if (error) {
-      alert("Error removing client: " + error.message);
+      alert("Erreur lors de la suppression du client : " + error.message);
     } else {
       fetchSlots();
     }
@@ -250,12 +250,12 @@ export default function AdminDashboard() {
 
   function getGenderBadge(gender: string) {
     if (gender === "female") {
-      return <span className="text-xs font-semibold bg-pink-100 text-pink-700 px-2.5 py-1 rounded-full">Women Only</span>;
+      return <span className="text-xs font-semibold bg-pink-100 text-pink-700 px-2.5 py-1 rounded-full">Femmes uniquement</span>;
     }
     if (gender === "male") {
-      return <span className="text-xs font-semibold bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-full">Men Only</span>;
+      return <span className="text-xs font-semibold bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-full">Hommes uniquement</span>;
     }
-    return <span className="text-xs font-semibold bg-slate-200 text-slate-700 px-2.5 py-1 rounded-full">Mixed</span>;
+    return <span className="text-xs font-semibold bg-slate-200 text-slate-700 px-2.5 py-1 rounded-full">Mixte</span>;
   }
 
   // Safe client-side date tracking for filters
@@ -294,7 +294,7 @@ export default function AdminDashboard() {
   });
 
   if (checkingAuth) {
-    return <div className="min-h-screen flex items-center justify-center text-slate-500">Loading...</div>;
+    return <div className="min-h-screen flex items-center justify-center text-slate-500">Chargement...</div>;
   }
 
   if (!isUnlocked) {
@@ -305,8 +305,8 @@ export default function AdminDashboard() {
             <div className="bg-blue-50 p-3 rounded-full text-blue-600">
               <Lock className="w-6 h-6" />
             </div>
-            <h1 className="text-2xl font-bold">Trainer Access</h1>
-            <p className="text-sm text-slate-500">Enter the admin password to manage sessions.</p>
+            <h1 className="text-2xl font-bold">Accès Entraîneur</h1>
+            <p className="text-sm text-slate-500">Entrez le mot de passe administrateur pour gérer les sessions.</p>
           </div>
 
           {authError && (
@@ -331,7 +331,7 @@ export default function AdminDashboard() {
             type="submit"
             className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-medium hover:bg-blue-700 transition"
           >
-            Unlock Dashboard
+            Déverrouiller le tableau de bord
           </button>
         </form>
       </div>
@@ -342,17 +342,17 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-slate-50 p-6 md:p-12 text-slate-900">
       <div className="max-w-4xl mx-auto space-y-8">
         <div className="flex flex-wrap justify-between items-center gap-4">
-          <h1 className="text-3xl font-bold">Trainer Admin Dashboard</h1>
+          <h1 className="text-3xl font-bold">Tableau de bord administrateur</h1>
           <div className="flex items-center gap-4">
             <a href="/" className="text-sm font-medium text-blue-600 hover:underline">
-              View Client Booking Page →
+              Voir la page de réservation client →
             </a>
             <button
               onClick={handleLock}
               className="flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-red-600 bg-white border px-3 py-1.5 rounded-lg"
             >
               <LogOut className="w-4 h-4" />
-              Lock
+              Verrouiller
             </button>
           </div>
         </div>
@@ -360,24 +360,24 @@ export default function AdminDashboard() {
         <form onSubmit={handleCreateSlot} className="bg-white p-6 rounded-xl shadow-sm border space-y-4">
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <PlusCircle className="w-5 h-5 text-blue-600" />
-            Add Custom Time Slot(s)
+            Ajouter un ou plusieurs créneaux personnalisés
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Session Title</label>
+              <label className="block text-sm font-medium mb-1">Titre de la session</label>
               <input
                 type="text"
                 required
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 className="w-full border rounded-lg p-2"
-                placeholder="e.g., HIIT Group or Women's Strength"
+                placeholder="ex. : Groupe HIIT ou Renforcement Femmes"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Max Capacity (Spots)</label>
+              <label className="block text-sm font-medium mb-1">Capacité maximale (Places)</label>
               <input
                 type="number"
                 min={1}
@@ -389,7 +389,7 @@ export default function AdminDashboard() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">First Session Date</label>
+              <label className="block text-sm font-medium mb-1">Date de la première session</label>
               <input
                 type="date"
                 required
@@ -401,7 +401,7 @@ export default function AdminDashboard() {
 
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <label className="block text-sm font-medium mb-1">Start Time</label>
+                <label className="block text-sm font-medium mb-1">Heure de début</label>
                 <input
                   type="time"
                   required
@@ -411,7 +411,7 @@ export default function AdminDashboard() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">End Time</label>
+                <label className="block text-sm font-medium mb-1">Heure de fin</label>
                 <input
                   type="time"
                   required
@@ -423,32 +423,32 @@ export default function AdminDashboard() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Session Gender Access</label>
+              <label className="block text-sm font-medium mb-1">Accès selon le genre</label>
               <select
                 value={genderRestriction}
                 onChange={(e) => setGenderRestriction(e.target.value)}
                 className="w-full border rounded-lg p-2 bg-white"
               >
-                <option value="mixed">Mixed (Everyone)</option>
-                <option value="female">Women Only</option>
-                <option value="male">Men Only</option>
+                <option value="mixed">Mixte (Tout le monde)</option>
+                <option value="female">Femmes uniquement</option>
+                <option value="male">Hommes uniquement</option>
               </select>
             </div>
 
             <div>
               <label className="block text-sm font-medium mb-1 flex items-center gap-1">
                 <Repeat className="w-4 h-4 text-slate-500" />
-                Weekly Schedule Repeat
+                Répétition de l'horaire hebdomadaire
               </label>
               <select
                 value={repeatWeeks}
                 onChange={(e) => setRepeatWeeks(Number(e.target.value))}
                 className="w-full border rounded-lg p-2 bg-white"
               >
-                <option value={1}>Does not repeat (Just this date)</option>
-                <option value={4}>Repeat weekly for 4 weeks</option>
-                <option value={8}>Repeat weekly for 8 weeks</option>
-                <option value={12}>Repeat weekly for 12 weeks</option>
+                <option value={1}>Ne se répète pas (Uniquement cette date)</option>
+                <option value={4}>Répéter chaque semaine pendant 4 semaines</option>
+                <option value={8}>Répéter chaque semaine pendant 8 semaines</option>
+                <option value={12}>Répéter chaque semaine pendant 12 semaines</option>
               </select>
             </div>
           </div>
@@ -459,10 +459,10 @@ export default function AdminDashboard() {
             className="bg-blue-600 text-white px-5 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition"
           >
             {loading
-              ? "Saving..."
+              ? "Enregistrement..."
               : repeatWeeks > 1
-              ? `Create ${repeatWeeks} Weekly Slots`
-              : "Create Time Slot"}
+              ? `Créer ${repeatWeeks} créneaux hebdomadaires`
+              : "Créer le créneau horaire"}
           </button>
         </form>
 
@@ -470,18 +470,18 @@ export default function AdminDashboard() {
           <div className="flex flex-wrap justify-between items-center gap-4">
             <h2 className="text-xl font-semibold flex items-center gap-2">
               <Calendar className="w-5 h-5" />
-              Time Slots & Client Bookings ({filteredSlots.length})
+              Créneaux horaires et réservations clients ({filteredSlots.length})
             </h2>
           </div>
 
           <div className="bg-white p-4 rounded-xl border shadow-sm flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap gap-1.5">
               {[
-                { id: "upcoming", label: "Upcoming" },
-                { id: "today", label: "Today" },
-                { id: "week", label: "Next 7 Days" },
-                { id: "past", label: "Past" },
-                { id: "all", label: "All" },
+                { id: "upcoming", label: "À venir" },
+                { id: "today", label: "Aujourd'hui" },
+                { id: "week", label: "Prochains 7 jours" },
+                { id: "past", label: "Passés" },
+                { id: "all", label: "Tous" },
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -513,10 +513,10 @@ export default function AdminDashboard() {
                   <button
                     type="button"
                     onClick={() => setSpecificDateFilter("")}
-                    title="Clear date filter"
+                    title="Effacer le filtre de date"
                     className="text-xs text-red-600 hover:underline px-1"
                   >
-                    Clear
+                    Effacer
                   </button>
                 )}
               </div>
@@ -526,17 +526,17 @@ export default function AdminDashboard() {
                 onChange={(e) => setGenderFilter(e.target.value)}
                 className="border rounded-lg px-2.5 py-1 text-xs bg-white"
               >
-                <option value="all">All Genders</option>
-                <option value="mixed">Mixed Only</option>
-                <option value="female">Women Only</option>
-                <option value="male">Men Only</option>
+                <option value="all">Tous les genres</option>
+                <option value="mixed">Mixte uniquement</option>
+                <option value="female">Femmes uniquement</option>
+                <option value="male">Hommes uniquement</option>
               </select>
             </div>
           </div>
 
           {filteredSlots.length === 0 && (
             <p className="text-slate-500 bg-white p-6 rounded-xl border text-center">
-              No time slots match your current filter.
+              Aucun créneau horaire ne correspond à votre filtre actuel.
             </p>
           )}
 
@@ -554,7 +554,7 @@ export default function AdminDashboard() {
                   >
                     <div className="flex justify-between items-center">
                       <span className="text-xs font-bold uppercase text-amber-800">
-                        Editing Time Slot Details
+                        Modification des détails du créneau
                       </span>
                       <button
                         type="button"
@@ -567,7 +567,7 @@ export default function AdminDashboard() {
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                       <div>
-                        <label className="block text-xs font-medium mb-1">Title</label>
+                        <label className="block text-xs font-medium mb-1">Titre</label>
                         <input
                           type="text"
                           required
@@ -577,7 +577,7 @@ export default function AdminDashboard() {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium mb-1">Max Capacity</label>
+                        <label className="block text-xs font-medium mb-1">Capacité maximale</label>
                         <input
                           type="number"
                           min={1}
@@ -588,15 +588,15 @@ export default function AdminDashboard() {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium mb-1">Gender Access</label>
+                        <label className="block text-xs font-medium mb-1">Accès selon le genre</label>
                         <select
                           value={editSlotGender}
                           onChange={(e) => setEditSlotGender(e.target.value)}
                           className="w-full border rounded p-2 text-sm bg-white"
                         >
-                          <option value="mixed">Mixed (Everyone)</option>
-                          <option value="female">Women Only</option>
-                          <option value="male">Men Only</option>
+                          <option value="mixed">Mixte (Tout le monde)</option>
+                          <option value="female">Femmes uniquement</option>
+                          <option value="male">Hommes uniquement</option>
                         </select>
                       </div>
                       <div>
@@ -610,7 +610,7 @@ export default function AdminDashboard() {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium mb-1">Start Time</label>
+                        <label className="block text-xs font-medium mb-1">Heure de début</label>
                         <input
                           type="time"
                           required
@@ -620,7 +620,7 @@ export default function AdminDashboard() {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium mb-1">End Time</label>
+                        <label className="block text-xs font-medium mb-1">Heure de fin</label>
                         <input
                           type="time"
                           required
@@ -637,14 +637,14 @@ export default function AdminDashboard() {
                         className="bg-emerald-600 text-white text-xs font-semibold px-4 py-2 rounded-lg hover:bg-emerald-700 flex items-center gap-1"
                       >
                         <Check className="w-3.5 h-3.5" />
-                        Save Slot Changes
+                        Enregistrer les modifications
                       </button>
                       <button
                         type="button"
                         onClick={() => setEditingSlotId(null)}
                         className="text-xs text-slate-600 px-3 py-2 hover:underline"
                       >
-                        Cancel
+                        Annuler
                       </button>
                     </div>
                   </form>
@@ -656,7 +656,7 @@ export default function AdminDashboard() {
                         {getGenderBadge(slot.gender_restriction)}
                       </div>
                       <p className="text-sm text-slate-600">
-                        {new Date(slot.start_time).toLocaleDateString(undefined, {
+                        {new Date(slot.start_time).toLocaleDateString("fr-FR", {
                           weekday: "short",
                           month: "short",
                           day: "numeric",
@@ -671,7 +671,7 @@ export default function AdminDashboard() {
                     <div className="flex items-center gap-2">
                       <span className="flex items-center gap-1 text-sm font-medium bg-slate-100 px-3 py-1 rounded-full">
                         <Users className="w-4 h-4" />
-                        {bookedCount} / {slot.max_capacity} booked
+                        {bookedCount} / {slot.max_capacity} réservé(s)
                       </span>
 
                       {!isFull && (
@@ -686,14 +686,14 @@ export default function AdminDashboard() {
                           className="flex items-center gap-1 text-xs font-semibold bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition"
                         >
                           <UserPlus className="w-3.5 h-3.5" />
-                          Add Client
+                          Ajouter un client
                         </button>
                       )}
 
                       <button
                         type="button"
                         onClick={() => startEditingSlot(slot)}
-                        title="Edit time slot details"
+                        title="Modifier les détails du créneau"
                         className="text-slate-400 hover:text-blue-600 transition p-1"
                       >
                         <Pencil className="w-4 h-4" />
@@ -702,7 +702,7 @@ export default function AdminDashboard() {
                       <button
                         type="button"
                         onClick={() => handleDeleteSlot(slot.id)}
-                        title="Delete entire time slot"
+                        title="Supprimer tout le créneau horaire"
                         className="text-slate-400 hover:text-red-600 transition p-1"
                       >
                         <Trash2 className="w-5 h-5" />
@@ -717,13 +717,13 @@ export default function AdminDashboard() {
                     className="bg-blue-50/60 border border-blue-200 p-3.5 rounded-lg space-y-3"
                   >
                     <p className="text-xs font-semibold text-blue-800 uppercase">
-                      Manually Add Client to This Session:
+                      Ajouter manuellement un client à cette session :
                     </p>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                       <input
                         type="text"
                         required
-                        placeholder="Client Name"
+                        placeholder="Nom du client"
                         value={newClientName}
                         onChange={(e) => setNewClientName(e.target.value)}
                         className="border rounded p-2 text-sm bg-white"
@@ -731,7 +731,7 @@ export default function AdminDashboard() {
                       <input
                         type="email"
                         required
-                        placeholder="Email Address"
+                        placeholder="Adresse e-mail"
                         value={newClientEmail}
                         onChange={(e) => setNewClientEmail(e.target.value)}
                         className="border rounded p-2 text-sm bg-white"
@@ -739,7 +739,7 @@ export default function AdminDashboard() {
                       <input
                         type="tel"
                         required
-                        placeholder="Phone Number"
+                        placeholder="Numéro de téléphone"
                         value={newClientPhone}
                         onChange={(e) => setNewClientPhone(e.target.value)}
                         className="border rounded p-2 text-sm bg-white"
@@ -750,14 +750,14 @@ export default function AdminDashboard() {
                         type="submit"
                         className="bg-blue-600 text-white text-xs font-semibold px-4 py-2 rounded hover:bg-blue-700"
                       >
-                        Save Client
+                        Enregistrer le client
                       </button>
                       <button
                         type="button"
                         onClick={() => setAddingToSlotId(null)}
                         className="text-xs text-slate-600 px-3 py-2 hover:underline"
                       >
-                        Cancel
+                        Annuler
                       </button>
                     </div>
                   </form>
@@ -765,7 +765,7 @@ export default function AdminDashboard() {
 
                 {bookedCount > 0 && (
                   <div className="border-t pt-3">
-                    <p className="text-xs font-semibold uppercase text-slate-400 mb-2">Registered Clients:</p>
+                    <p className="text-xs font-semibold uppercase text-slate-400 mb-2">Clients inscrits :</p>
                     <ul className="space-y-2 text-sm">
                       {slot.bookings.map((b: any) => {
                         const isEditing = editingBookingId === b.id;
@@ -783,7 +783,7 @@ export default function AdminDashboard() {
                                   value={editClientName}
                                   onChange={(e) => setEditClientName(e.target.value)}
                                   className="border rounded p-1.5 text-sm bg-white w-full"
-                                  placeholder="Name"
+                                  placeholder="Nom"
                                 />
                                 <input
                                   type="tel"
@@ -791,7 +791,7 @@ export default function AdminDashboard() {
                                   value={editClientPhone}
                                   onChange={(e) => setEditClientPhone(e.target.value)}
                                   className="border rounded p-1.5 text-sm bg-white w-full"
-                                  placeholder="Phone"
+                                  placeholder="Téléphone"
                                 />
                                 <input
                                   type="email"
@@ -799,12 +799,12 @@ export default function AdminDashboard() {
                                   value={editClientEmail}
                                   onChange={(e) => setEditClientEmail(e.target.value)}
                                   className="border rounded p-1.5 text-sm bg-white w-full"
-                                  placeholder="Email"
+                                  placeholder="E-mail"
                                 />
                                 <div className="flex gap-1 shrink-0">
                                   <button
                                     type="submit"
-                                    title="Save changes"
+                                    title="Enregistrer les modifications"
                                     className="bg-emerald-600 text-white p-1.5 rounded hover:bg-emerald-700"
                                   >
                                     <Check className="w-4 h-4" />
@@ -812,7 +812,7 @@ export default function AdminDashboard() {
                                   <button
                                     type="button"
                                     onClick={() => setEditingBookingId(null)}
-                                    title="Cancel"
+                                    title="Annuler"
                                     className="bg-slate-200 text-slate-700 p-1.5 rounded hover:bg-slate-300"
                                   >
                                     <X className="w-4 h-4" />
@@ -838,7 +838,7 @@ export default function AdminDashboard() {
                               <button
                                 type="button"
                                 onClick={() => startEditingBooking(b)}
-                                title="Edit client info"
+                                title="Modifier les informations du client"
                                 className="text-slate-500 hover:text-blue-600 p-1 transition"
                               >
                                 <Pencil className="w-4 h-4" />
@@ -846,7 +846,7 @@ export default function AdminDashboard() {
                               <button
                                 type="button"
                                 onClick={() => handleDeleteBooking(b.id, b.client_name)}
-                                title="Remove client from slot"
+                                title="Retirer le client du créneau"
                                 className="text-slate-500 hover:text-red-600 p-1 transition"
                               >
                                 <Trash2 className="w-4 h-4" />
