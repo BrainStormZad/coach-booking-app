@@ -83,12 +83,12 @@ export default function ClientBookingPage() {
 
   function getGenderBadge(gender: string) {
     if (gender === "female") {
-      return <span className="text-xs font-semibold bg-pink-100 text-pink-700 px-2.5 py-0.5 rounded-full">Femmes uniquement</span>;
+      return <span className="text-xs font-semibold bg-pink-100 text-pink-700 px-2.5 py-0.5 rounded-full">Femmes</span>;
     }
     if (gender === "male") {
-      return <span className="text-xs font-semibold bg-indigo-100 text-indigo-700 px-2.5 py-0.5 rounded-full">Hommes uniquement</span>;
+      return <span className="text-xs font-semibold bg-indigo-100 text-indigo-700 px-2.5 py-0.5 rounded-full">Hommes</span>;
     }
-    return <span className="text-xs font-semibold bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full">Session mixte</span>;
+    return <span className="text-xs font-semibold bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full">Mixte</span>;
   }
 
   // Extract unique available dates for the horizontal Day Picker
@@ -106,8 +106,8 @@ export default function ClientBookingPage() {
     <div className="min-h-screen bg-slate-50 p-6 md:p-12 text-slate-900">
       <div className="max-w-3xl mx-auto space-y-8">
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold">Réservez votre session d'entraînement</h1>
-          <p className="text-slate-600">Sélectionnez votre profil ci-dessous pour voir les sessions disponibles adaptées pour vous.</p>
+          <h1 className="text-3xl font-bold">Réservez votre séance</h1>
+          <p className="text-slate-600">Sélectionnez votre profil ci-dessous pour voir les séances disponibles adaptées pour vous.</p>
         </div>
 
         {/* Step 1: Mandatory Gender Selection */}
@@ -126,7 +126,7 @@ export default function ClientBookingPage() {
                   : "bg-slate-50 hover:bg-slate-100 text-slate-700"
               }`}
             >
-              Femme (Créneaux mixtes et réservés aux femmes)
+              Femme
             </button>
             <button
               type="button"
@@ -137,7 +137,7 @@ export default function ClientBookingPage() {
                   : "bg-slate-50 hover:bg-slate-100 text-slate-700"
               }`}
             >
-              Homme (Créneaux mixtes et réservés aux hommes)
+              Homme
             </button>
           </div>
         </div>
@@ -156,7 +156,7 @@ export default function ClientBookingPage() {
         {clientGender && (
           <div className="space-y-4">
             <div className="flex flex-wrap justify-between items-center gap-2">
-              <h2 className="text-lg font-semibold">Étape 2 : Choisissez un jour et un créneau horaire</h2>
+              <h2 className="text-lg font-semibold">Étape 2 : Choisissez un jour et un créneau</h2>
               {selectedDate !== "all" && (
                 <button
                   onClick={() => setSelectedDate("all")}
@@ -218,7 +218,7 @@ export default function ClientBookingPage() {
 
             {filteredSlots.length === 0 ? (
               <p className="text-slate-500 bg-white p-6 rounded-xl border text-center">
-                Aucune session à venir n'est disponible pour cette sélection.
+                Aucune séance disponible pour cette sélection.
               </p>
             ) : (
               <div className="grid gap-4">
