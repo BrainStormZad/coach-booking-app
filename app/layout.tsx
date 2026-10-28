@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Application de Réservation de Coach",
+  title: "Squelette Planity de groupe",
   description: "Géré par Create Next App",
 };
 
