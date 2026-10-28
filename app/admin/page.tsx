@@ -28,10 +28,10 @@ export default function AdminDashboard() {
 
   // Create Slot State
   const [slots, setSlots] = useState<any[]>([]);
-  const [title, setTitle] = useState("Entraînement en petit groupe");
+  const [title, setTitle] = useState("Nom de la séance");
   const [date, setDate] = useState("");
-  const [startTime, setStartTime] = useState("18:00");
-  const [endTime, setEndTime] = useState("19:00");
+  const [startTime, setStartTime] = useState("15:00");
+  const [endTime, setEndTime] = useState("15:40");
   const [maxCapacity, setMaxCapacity] = useState(5);
   const [genderRestriction, setGenderRestriction] = useState("mixed");
   const [repeatWeeks, setRepeatWeeks] = useState(1);
@@ -185,7 +185,7 @@ export default function AdminDashboard() {
   }
 
   async function handleDeleteSlot(id: string) {
-    if (!confirm("Voulez-vous vraiment supprimer tout ce créneau horaire ainsi que toutes ses réservations ?")) return;
+    if (!confirm("Voulez-vous vraiment supprimer ce créneau horaire ainsi que toutes ses réservations ?")) return;
     await supabase.from("time_slots").delete().eq("id", id);
     fetchSlots();
   }
@@ -239,7 +239,7 @@ export default function AdminDashboard() {
   }
 
   async function handleDeleteBooking(bookingId: string, clientName: string) {
-    if (!confirm(`Retirer ${clientName} de cette session ?`)) return;
+    if (!confirm(`Retirer ${clientName} de cette séance ?`)) return;
     const { error } = await supabase.from("bookings").delete().eq("id", bookingId);
     if (error) {
       alert("Erreur lors de la suppression du client : " + error.message);
@@ -306,7 +306,7 @@ export default function AdminDashboard() {
               <Lock className="w-6 h-6" />
             </div>
             <h1 className="text-2xl font-bold">Accès Entraîneur</h1>
-            <p className="text-sm text-slate-500">Entrez le mot de passe administrateur pour gérer les sessions.</p>
+            <p className="text-sm text-slate-500">Entrez le mot de passe administrateur pour gérer les séances.</p>
           </div>
 
           {authError && (
@@ -365,7 +365,7 @@ export default function AdminDashboard() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Titre de la session</label>
+              <label className="block text-sm font-medium mb-1">Titre de la séance</label>
               <input
                 type="text"
                 required
@@ -389,7 +389,7 @@ export default function AdminDashboard() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Date de la première session</label>
+              <label className="block text-sm font-medium mb-1">Date de la première séance</label>
               <input
                 type="date"
                 required
@@ -717,7 +717,7 @@ export default function AdminDashboard() {
                     className="bg-blue-50/60 border border-blue-200 p-3.5 rounded-lg space-y-3"
                   >
                     <p className="text-xs font-semibold text-blue-800 uppercase">
-                      Ajouter manuellement un client à cette session :
+                      Ajouter manuellement un client à cette séance :
                     </p>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                       <input
