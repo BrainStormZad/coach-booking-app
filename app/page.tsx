@@ -53,7 +53,7 @@ export default function ClientBookingPage() {
       .eq("slot_id", selectedSlot.id);
 
     if ((currentBookings?.length || 0) >= selectedSlot.max_capacity) {
-      alert("Sorry, this session just filled up!");
+      alert("Désolé, cette session vient de se remplir !");
       setSubmitting(false);
       fetchSlots(clientGender);
       return;
@@ -70,7 +70,7 @@ export default function ClientBookingPage() {
 
     setSubmitting(false);
     if (error) {
-      alert("Booking error: " + error.message);
+      alert("Erreur de réservation : " + error.message);
     } else {
       setBookedSuccess(true);
       setSelectedSlot(null);
@@ -83,12 +83,12 @@ export default function ClientBookingPage() {
 
   function getGenderBadge(gender: string) {
     if (gender === "female") {
-      return <span className="text-xs font-semibold bg-pink-100 text-pink-700 px-2.5 py-0.5 rounded-full">Women Only</span>;
+      return <span className="text-xs font-semibold bg-pink-100 text-pink-700 px-2.5 py-0.5 rounded-full">Femmes uniquement</span>;
     }
     if (gender === "male") {
-      return <span className="text-xs font-semibold bg-indigo-100 text-indigo-700 px-2.5 py-0.5 rounded-full">Men Only</span>;
+      return <span className="text-xs font-semibold bg-indigo-100 text-indigo-700 px-2.5 py-0.5 rounded-full">Hommes uniquement</span>;
     }
-    return <span className="text-xs font-semibold bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full">Mixed Session</span>;
+    return <span className="text-xs font-semibold bg-slate-100 text-slate-700 px-2.5 py-0.5 rounded-full">Session mixte</span>;
   }
 
   // Extract unique available dates for the horizontal Day Picker
@@ -106,15 +106,15 @@ export default function ClientBookingPage() {
     <div className="min-h-screen bg-slate-50 p-6 md:p-12 text-slate-900">
       <div className="max-w-3xl mx-auto space-y-8">
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold">Book Your Training Session</h1>
-          <p className="text-slate-600">Select your profile below to view available sessions tailored to you.</p>
+          <h1 className="text-3xl font-bold">Réservez votre session d'entraînement</h1>
+          <p className="text-slate-600">Sélectionnez votre profil ci-dessous pour voir les sessions disponibles adaptées pour vous.</p>
         </div>
 
         {/* Step 1: Mandatory Gender Selection */}
         <div className="bg-white p-6 rounded-xl shadow-sm border space-y-4">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-2">
             <UserCheck className="w-4 h-4 text-blue-600" />
-            Step 1: Specify Your Gender to View Available Slots
+            Étape 1 : Indiquez votre genre pour afficher les créneaux disponibles
           </h2>
           <div className="grid grid-cols-2 gap-4">
             <button
@@ -126,7 +126,7 @@ export default function ClientBookingPage() {
                   : "bg-slate-50 hover:bg-slate-100 text-slate-700"
               }`}
             >
-              Woman (Mixed & Women-Only Slots)
+              Femme (Créneaux mixtes et réservés aux femmes)
             </button>
             <button
               type="button"
@@ -137,7 +137,7 @@ export default function ClientBookingPage() {
                   : "bg-slate-50 hover:bg-slate-100 text-slate-700"
               }`}
             >
-              Man (Mixed & Men-Only Slots)
+              Homme (Créneaux mixtes et réservés aux hommes)
             </button>
           </div>
         </div>
@@ -146,8 +146,8 @@ export default function ClientBookingPage() {
           <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-4 rounded-xl flex items-center gap-3">
             <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0" />
             <div>
-              <p className="font-semibold">Booking Confirmed!</p>
-              <p className="text-sm">Your spot has been reserved. See you at training!</p>
+              <p className="font-semibold">Réservation confirmée !</p>
+              <p className="text-sm">Votre place a bien été réservée. À bientôt pour l'entraînement !</p>
             </div>
           </div>
         )}
@@ -156,13 +156,13 @@ export default function ClientBookingPage() {
         {clientGender && (
           <div className="space-y-4">
             <div className="flex flex-wrap justify-between items-center gap-2">
-              <h2 className="text-lg font-semibold">Step 2: Choose a Day & Time Slot</h2>
+              <h2 className="text-lg font-semibold">Étape 2 : Choisissez un jour et un créneau horaire</h2>
               {selectedDate !== "all" && (
                 <button
                   onClick={() => setSelectedDate("all")}
                   className="text-xs font-medium text-blue-600 hover:underline"
                 >
-                  Show all dates ({slots.length})
+                  Afficher toutes les dates ({slots.length})
                 </button>
               )}
             </div>
@@ -182,7 +182,7 @@ export default function ClientBookingPage() {
                       : "bg-white text-slate-700 hover:bg-slate-100"
                   }`}
                 >
-                  All Dates ({slots.length})
+                  Toutes les dates ({slots.length})
                 </button>
 
                 {availableDates.map((dateStr) => {
@@ -205,10 +205,10 @@ export default function ClientBookingPage() {
                       }`}
                     >
                       <div className="text-xs uppercase opacity-80 font-medium">
-                        {dateObj.toLocaleDateString(undefined, { weekday: "short" })}
+                        {dateObj.toLocaleDateString("fr-FR", { weekday: "short" })}
                       </div>
                       <div className="text-sm font-bold">
-                        {dateObj.toLocaleDateString(undefined, { day: "numeric", month: "short" })}
+                        {dateObj.toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
                       </div>
                     </button>
                   );
@@ -218,7 +218,7 @@ export default function ClientBookingPage() {
 
             {filteredSlots.length === 0 ? (
               <p className="text-slate-500 bg-white p-6 rounded-xl border text-center">
-                No upcoming sessions available for this selection.
+                Aucune session à venir n'est disponible pour cette sélection.
               </p>
             ) : (
               <div className="grid gap-4">
@@ -259,7 +259,7 @@ export default function ClientBookingPage() {
                           <div className="flex flex-wrap gap-4 text-sm text-slate-600">
                             <span className="flex items-center gap-1">
                               <Calendar className="w-4 h-4" />
-                              {new Date(slot.start_time).toLocaleDateString(undefined, {
+                              {new Date(slot.start_time).toLocaleDateString("fr-FR", {
                                 weekday: "short",
                                 month: "short",
                                 day: "numeric",
@@ -276,12 +276,12 @@ export default function ClientBookingPage() {
                         <div>
                           {isFull ? (
                             <span className="bg-slate-200 text-slate-700 text-xs font-bold px-3 py-1.5 rounded-full">
-                              FULL
+                              COMPLET
                             </span>
                           ) : (
                             <span className="bg-emerald-100 text-emerald-800 text-xs font-semibold px-3 py-1.5 rounded-full flex items-center gap-1">
                               <Users className="w-3.5 h-3.5" />
-                              {spotsLeft} {spotsLeft === 1 ? "spot" : "spots"} left
+                              {spotsLeft} {spotsLeft === 1 ? "place restante" : "places restantes"}
                             </span>
                           )}
                         </div>
@@ -294,14 +294,14 @@ export default function ClientBookingPage() {
                           className="p-5 bg-white border-t border-blue-100 space-y-4"
                         >
                           <h4 className="text-sm font-semibold text-slate-700">
-                            Enter your details to reserve your spot:
+                            Entrez vos coordonnées pour réserver votre place :
                           </h4>
                           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                             <input
                               type="text"
                               required
                               autoFocus
-                              placeholder="Your Full Name"
+                              placeholder="Votre nom complet"
                               value={name}
                               onChange={(e) => setName(e.target.value)}
                               className="border rounded-lg p-2.5 w-full text-sm"
@@ -309,7 +309,7 @@ export default function ClientBookingPage() {
                             <input
                               type="email"
                               required
-                              placeholder="Email Address"
+                              placeholder="Adresse e-mail"
                               value={email}
                               onChange={(e) => setEmail(e.target.value)}
                               className="border rounded-lg p-2.5 w-full text-sm"
@@ -317,7 +317,7 @@ export default function ClientBookingPage() {
                             <input
                               type="tel"
                               required
-                              placeholder="Phone Number"
+                              placeholder="Numéro de téléphone"
                               value={phone}
                               onChange={(e) => setPhone(e.target.value)}
                               className="border rounded-lg p-2.5 w-full text-sm"
@@ -329,14 +329,14 @@ export default function ClientBookingPage() {
                               disabled={submitting}
                               className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition"
                             >
-                              {submitting ? "Confirming..." : "Confirm Booking"}
+                              {submitting ? "Confirmation..." : "Confirmer la réservation"}
                             </button>
                             <button
                               type="button"
                               onClick={() => setSelectedSlot(null)}
                               className="text-slate-600 px-3 py-2 text-sm hover:underline"
                             >
-                              Cancel
+                              Annuler
                             </button>
                           </div>
                         </form>
